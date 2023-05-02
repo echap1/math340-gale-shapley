@@ -1,5 +1,5 @@
 use std::cmp::max;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use csv::Trim;
 use serde::Deserialize;
 use crate::entry::Entry;
@@ -17,19 +17,23 @@ struct PrefRecord {
 }
 
 impl Preferences {
-    pub fn get(&self, k: &Entry, v: &Entry) -> u32 {
-        *self.pref_map.get(k).unwrap().get(v).unwrap()
+    pub fn get(&self, k: &Entry, v: &Entry) -> Option<u32> {
+        Some(*self.pref_map.get(k).unwrap().get(v)?)
     }
 
     pub fn get_all(&self, k: &Entry) -> Vec<Entry> {
         let prefs = self.pref_map.get(k).unwrap();
-        let mut entries = vec![None; self.size as usize];
+        let mut entries = vec![None; prefs.len()];
 
         for (e, idx) in prefs {
             entries[*idx as usize] = Some(*e);
         }
 
         entries.iter().map(|e| e.unwrap()).collect()
+    }
+
+    pub fn get_all_hashset(&self, k: &Entry) -> HashSet<Entry> {
+        self.pref_map.get(k).unwrap().iter().map(|e| e.0).cloned().collect()
     }
 
     pub fn from_csv(filename: String) -> Self {

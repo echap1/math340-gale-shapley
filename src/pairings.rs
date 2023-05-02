@@ -47,8 +47,8 @@ impl Pairing {
 
     pub fn prefers(&self, e: &Entry, prefs: &Preferences) -> bool {
         match e {
-            Entry::B(b2) => { prefs.get(&self.r(), &self.b()) > prefs.get(&self.r(), &Entry::B(*b2)) }
-            Entry::R(r2) => { prefs.get(&self.b(), &self.r()) > prefs.get(&self.b(), &Entry::R(*r2)) }
+            Entry::B(b2) => { prefs.get(&self.r(), &self.b()).unwrap() > prefs.get(&self.r(), &Entry::B(*b2)).unwrap() }
+            Entry::R(r2) => { prefs.get(&self.b(), &self.r()).unwrap() > prefs.get(&self.b(), &Entry::R(*r2)).unwrap() }
         }
     }
 }
