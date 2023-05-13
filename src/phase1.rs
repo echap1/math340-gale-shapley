@@ -14,7 +14,7 @@ pub fn phase1() {
         println!("\n\n##################\nSIZE {}:", size);
 
         let solution_b_to_r = optimal(&pref, true);
-        if get_rogues(&solution_b_to_r, &pref).get().len() == 0 {
+        if get_rogues(&solution_b_to_r, &pref).get().is_empty() {
             println!("Solution (B->R) is stable!");
         } else {
             println!("Solution (B->R) is not stable!");
@@ -22,7 +22,7 @@ pub fn phase1() {
         solution_b_to_r.write_to_file(format!("{}/size_{}_solution_b_to_r.txt", OUT_DIR, size));
 
         let solution_r_to_b = optimal(&pref, false);
-        if get_rogues(&solution_r_to_b, &pref).get().len() == 0 {
+        if get_rogues(&solution_r_to_b, &pref).get().is_empty() {
             println!("Solution (R->B) is stable!");
         } else {
             println!("Solution (R->B) is not stable!");
@@ -39,7 +39,7 @@ pub fn phase1() {
             let pairings = Pairings::from_csv(format!("{}/size_{}_parings_{}.csv", DATA_DIR, size, idx));
             // println!("{}: {:?}\n\n\n", idx, get_rogues(&pairings, &pref));
             let rogues = get_rogues(&pairings, &pref);
-            if rogues.get().len() == 0 {
+            if rogues.get().is_empty() {
                 println!("Pairing idx {} is stable!", idx);
             } else {
                 rogues.write_to_file(format!("{}/size_{}_rogues_{}.txt", OUT_DIR, size, idx));
@@ -75,12 +75,12 @@ pub fn get_rogues(pairings: &Pairings, prefs: &Preferences) -> Pairings {
 
 pub fn optimal(prefs: &Preferences, proposer_is_b: bool) -> Pairings {
     let proposer = match proposer_is_b {
-        true => { |n| Entry::B(n) }
-        false => { |n| Entry::R(n) }
+        true => { Entry::B }
+        false => { Entry::R }
     };
     let acceptor = match proposer_is_b {
-        true => { |n| Entry::R(n) }
-        false => { |n| Entry::B(n) }
+        true => { Entry::R }
+        false => { Entry::B }
     };
 
     let mut unpaired_proposers: HashSet<Entry> = HashSet::new();
@@ -102,9 +102,8 @@ pub fn optimal(prefs: &Preferences, proposer_is_b: bool) -> Pairings {
         // Go down the list of preferences until an acceptor wants them
         for pref in prefs.get_all(&proposer) {
             if unpaired_acceptors.take(&pref).is_some() || pairings.with(&pref).unwrap().prefers(&proposer, prefs) {
-                match pairings.new_pairing(&pref, proposer) {
-                    Some(new_unpaired_proposer) => { unpaired_proposers.insert(new_unpaired_proposer); }
-                    None => {}
+                if let Some(new_unpaired_proposer) = pairings.new_pairing(&pref, proposer) {
+                    unpaired_proposers.insert(new_unpaired_proposer);
                 }
                 break;
             }
